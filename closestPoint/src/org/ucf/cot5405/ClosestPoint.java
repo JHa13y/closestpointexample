@@ -30,6 +30,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.ucf.cot5405.algorithm.NaiveAlgorithm;
+import org.ucf.cot5405.algorithm.RecursiveAlgorithm;
 
 
 public class ClosestPoint extends JFrame {
@@ -112,6 +113,20 @@ public class ClosestPoint extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				String newN = nEntry.getText();
+				try
+				{
+					int n = Integer.parseInt(newN);
+					setN(n);
+				}
+				catch(Exception ex)
+				{
+					 String infoMessage = "Error Please enter an Integer Value of n!";
+					 JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+					 nEntry.setText(Integer.toString(oldN));
+					 return;
+				}
+				
 				runGeneratePoints();
 			}
 			
@@ -122,13 +137,46 @@ public class ClosestPoint extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				String newN = delayEntry.getText();
+				try
+				{
+					int n = Integer.parseInt(newN);
+					setDelay(n);
+				}
+				catch(Exception ex)
+				{
+					 String infoMessage = "Error Please enter an Integer Value for delay";
+					 JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+					 delayEntry.setText(Integer.toString(delay));
+					 return;
+				}
 				runNaiveSearch();
 			}
 			
 		});
 		
 		Button runDivide = new Button("Run Recursive Search");
-		runDivide.setEnabled(false); //TODO: Remove when Implemented
+		runDivide.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String newN = delayEntry.getText();
+				try
+				{
+					int n = Integer.parseInt(newN);
+					setDelay(n);
+				}
+				catch(Exception ex)
+				{
+					 String infoMessage = "Error Please enter an Integer Value for delay";
+					 JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+					 delayEntry.setText(Integer.toString(delay));
+					 return;
+				}
+				runDivideSearch();
+			}
+			
+		});
 
 		Controls.add(new Label("Number of Points:"));
 		Controls.add(nEntry);
@@ -180,6 +228,14 @@ public class ClosestPoint extends JFrame {
 	public void runNaiveSearch()
 	{
 		closestPair = (new NaiveAlgorithm()).getClosestPoint(this.points);
+		updateDisplay();
+		String infoMessage = "Closest Points Found! " + Stats.numComparisons + " Comparisons Executed!";
+		JOptionPane.showMessageDialog(null, infoMessage, "Info", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	public void runDivideSearch()
+	{
+		closestPair = (new RecursiveAlgorithm()).getClosestPoint(this.points);
 		updateDisplay();
 		String infoMessage = "Closest Points Found! " + Stats.numComparisons + " Comparisons Executed!";
 		JOptionPane.showMessageDialog(null, infoMessage, "Info", JOptionPane.INFORMATION_MESSAGE);
@@ -247,7 +303,17 @@ public class ClosestPoint extends JFrame {
 		
 		private void drawDeltas(Graphics g)
 		{
-			
+			g.setColor(Color.GRAY);
+			if(Stats.comparisons != null)
+			{
+				for(Pair<Integer, Double> deltas : Stats.deltas)
+				{
+					int leftX = (int) (deltas.getLeft() - deltas.getRight());
+					int width = (int) (deltas.getRight() * 2);
+					
+					g.fillRect(leftX, 0, width, canvas.getHeight());
+				}
+			}
 		}
 		private void drawGrid(Graphics g)
 		{
@@ -294,10 +360,25 @@ public class ClosestPoint extends JFrame {
 				}
 			}
 		}
+		private void drawClosests(Graphics g)
+		{
+			g.setColor(Color.GREEN);
+			if(Stats.shortests != null)
+			{
+				for(Pair<Point, Point> shortest: Stats.shortests)
+				{
+					Point p1 = shortest.getLeft();
+					Point p2 = shortest.getRight();
+					g.drawOval(p1.getX(), p1.getY(), 3, 3);
+					g.drawOval(p2.getX(), p2.getY(), 3, 3);
+					g.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+				}
+			}
+		}
 		
 		private void drawSolution(Graphics g)
 		{
-			g.setColor(Color.GREEN);
+			g.setColor(Color.CYAN);
 			if(closestPair != null)
 			{
 				Point p1 = closestPair.getLeft();
