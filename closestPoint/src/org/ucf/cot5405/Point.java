@@ -18,9 +18,18 @@ public class Point {
 	
 	public double getDistance(Point other)
 	{
+		Pair<Point, Point> compare = new Pair<Point, Point>(this, other);
+		Stats.comparisons.add(compare);
 		Stats.numComparisons++;
+		ClosestPoint.getSingleton().updateDisplay();
+		
 		int xDiff = x - other.getX();
 		int yDiff = y- other.getY();
+		
+		
+		Stats.comparisons.remove(compare);
+		ClosestPoint.getSingleton().updateDisplay();
+		
 		return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
 	}
 	
