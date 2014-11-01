@@ -50,26 +50,34 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 		}
 		
 		int n = points.size()/2;
-		Double cut = (points.get(n).getX() + points.get(n+1).getX()) /2.0;
+		
+		
+		List<Point> left = points.subList(0, n);
+		List<Point> right = points.subList(n, points.size());
+		
+		Double cut = (left.get(left.size()-1).getX()+ right.get(0).getX()) /2.0;
 		Stats.cuts.add(cut);
 		ClosestPoint.getSingleton().updateDisplay();
 		
-		Pair<Point,Point> leftSmallest = internalGetClosest(points.subList(0, n));
+		
+		Pair<Point,Point> leftSmallest = internalGetClosest(left);
 		double leftDistance =Double.MAX_VALUE;
 		if(leftSmallest != null)
 		{
 			Stats.shortests.add(leftSmallest);
+			ClosestPoint.getSingleton().updateDisplay();
 			leftDistance = leftSmallest.getLeft().getDistance(leftSmallest.getRight());
 		}
 		
-		Pair<Point,Point> rightSmallest = internalGetClosest(points.subList(0, n));
+		
+		Pair<Point,Point> rightSmallest = internalGetClosest(right);
 		double rightDistance =Double.MAX_VALUE;
 		if(rightSmallest != null)
 		{
 			Stats.shortests.add(rightSmallest);
+			ClosestPoint.getSingleton().updateDisplay();
 			rightDistance = rightSmallest.getLeft().getDistance(rightSmallest.getRight());
 		}
-		Stats.shortests.add(rightSmallest);
 		if(rightDistance < leftDistance)
 		{
 			smallest = rightSmallest;
@@ -78,8 +86,10 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 		{
 			smallest = leftSmallest;
 		}
-		
-		Pair<Integer, Double> delta = new Pair<Integer, Double>(cut.intValue(), Math.min(leftDistance, rightDistance));
+		Double minDel = Math.min(leftDistance, rightDistance);
+//		minDel = Math.min(minDel, cut - left.get(left.size()-1).getX());
+//		minDel = Math.min(minDel, right.get(right.size()-1).getX() - cut);
+		Pair<Integer, Double> delta = new Pair<Integer, Double>(cut.intValue(), minDel);
 		Stats.deltas.add(delta);
 		
 		ClosestPoint.getSingleton().updateDisplay();
@@ -122,6 +132,10 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 			for(int i=index; i < Math.min(index + 11, remaining.size()-1); i++)
 			{
 				Point p2 = remaining.get(i);
+				if(p == p2)
+				{
+					continue;
+				}
 				double dist = p.getDistance(p2);
 				if(dist < minimumDist)
 				{

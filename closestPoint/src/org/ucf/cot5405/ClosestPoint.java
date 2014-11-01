@@ -1,5 +1,6 @@
 package org.ucf.cot5405;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Canvas;
@@ -11,6 +12,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Label;
+import java.awt.Stroke;
 import java.awt.TextField;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -227,6 +229,12 @@ public class ClosestPoint extends JFrame {
 	
 	public void runNaiveSearch()
 	{
+		if(points == null)
+		{
+			String infoMessage = "Error:  Generate Points before search";
+			JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 		closestPair = (new NaiveAlgorithm()).getClosestPoint(this.points);
 		updateDisplay();
 		String infoMessage = "Closest Points Found! " + Stats.numComparisons + " Comparisons Executed!";
@@ -235,6 +243,12 @@ public class ClosestPoint extends JFrame {
 	
 	public void runDivideSearch()
 	{
+		if(points == null)
+		{
+			String infoMessage = "Error:  Generate Points before search";
+			JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
 		closestPair = (new RecursiveAlgorithm()).getClosestPoint(this.points);
 		updateDisplay();
 		String infoMessage = "Closest Points Found! " + Stats.numComparisons + " Comparisons Executed!";
@@ -262,6 +276,7 @@ public class ClosestPoint extends JFrame {
 	{
 		private Font monoFont = new Font("Monospaced", Font.BOLD
 			      | Font.ITALIC, 6);
+		Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
 		
 		PointCanvas()
 		{
@@ -293,6 +308,7 @@ public class ClosestPoint extends JFrame {
 			drawDeltas(g);
 			drawGrid(g);
 			drawPoints(g);
+			drawClosests(g);
 			drawComparisons(g);
 			drawSolution(g);
 		    g.dispose();
@@ -303,16 +319,29 @@ public class ClosestPoint extends JFrame {
 		
 		private void drawDeltas(Graphics g)
 		{
-			g.setColor(Color.GRAY);
+			
 			if(Stats.comparisons != null)
 			{
+				
 				for(Pair<Integer, Double> deltas : Stats.deltas)
 				{
+					g.setColor(Color.GRAY);
 					int leftX = (int) (deltas.getLeft() - deltas.getRight());
 					int width = (int) (deltas.getRight() * 2);
 					
 					g.fillRect(leftX, 0, width, canvas.getHeight());
+					
 				}
+				for(Double cut : Stats.cuts)
+				{
+					g.setColor(Color.black);
+					Graphics2D g2d = (Graphics2D)g;
+					Stroke original = g2d.getStroke();
+			        g2d.setStroke(dashed);
+					g.drawLine(cut.intValue(), 0, cut.intValue(), canvas.getHeight());
+					g2d.setStroke(original);
+				}
+				
 			}
 		}
 		private void drawGrid(Graphics g)
