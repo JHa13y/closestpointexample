@@ -16,16 +16,18 @@ public class NaiveAlgorithm implements ClosestPointAlgo{
 		double minimumDistance = Double.MAX_VALUE;
 		Pair<Point, Point> smallest = null;
 		
-		for(Point p1 : points)
-		//for(int i=0; i<points.size()/2; i++)
+		//for(Point p1 : points)
+		for(int i=0; i<points.size(); i++)
 		{
-			//Point p1 = points.get(0);
-			for(Point p2 : points)
+			Point p1 = points.get(i);
+			for(int j=0; j<i; j++)
+			//for(Point p2 : points)
 			{
-				if(p1 == p2)
-				{
-					continue;
-				}
+				Point p2 = points.get(j);
+//				if(p1 == p2)
+//				{
+//					continue;
+//				}
 				double dist = p1.getDistance(p2);
 				if(dist < minimumDistance)
 				{

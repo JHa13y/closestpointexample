@@ -8,11 +8,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.TextField;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,10 +35,11 @@ import org.ucf.cot5405.algorithm.NaiveAlgorithm;
 public class ClosestPoint extends JFrame {
 	private static ClosestPoint instance = new ClosestPoint();
 	int n = 25;
-	int delay = 25;
+	int delay = 50;
 	List<Point> points;
 	Pair<Point, Point> closestPair = null;
 	PointCanvas canvas = new PointCanvas();
+	boolean hasUpdate = false;
 	
 	public static ClosestPoint getSingleton()
 	{
@@ -45,7 +49,6 @@ public class ClosestPoint extends JFrame {
 	public ClosestPoint()
 	{
 		super("Closest Point");
-		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//3. Create components and put them in the frame.
@@ -55,7 +58,6 @@ public class ClosestPoint extends JFrame {
 		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.PAGE_AXIS));
 
 		mainPane.add(canvas);
-		this.setSize(canvas.getWidth(), canvas.getHeight() + 50);
 		JPanel Controls = new JPanel(new GridLayout());
 		final TextField nEntry = new TextField(4);
 		nEntry.setText(Integer.toString(n));
@@ -180,7 +182,7 @@ public class ClosestPoint extends JFrame {
 		closestPair = (new NaiveAlgorithm()).getClosestPoint(this.points);
 		updateDisplay();
 		String infoMessage = "Closest Points Found! " + Stats.numComparisons + " Comparisons Executed!";
-		JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, infoMessage, "Info", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	public void updateDisplay()
@@ -188,8 +190,9 @@ public class ClosestPoint extends JFrame {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {}
-		
-		canvas.paintComponent(canvas.getGraphics());
+		hasUpdate = true;
+		canvas.paint(getGraphics());
+		//canvas.update(canvas.getGraphics());
 	}
 
 	
@@ -199,10 +202,10 @@ public class ClosestPoint extends JFrame {
 		ClosestPoint p = ClosestPoint.getSingleton();
 	}
 	
-	private class PointCanvas extends JPanel
+	private class PointCanvas extends Canvas
 	{
 		private Font monoFont = new Font("Monospaced", Font.BOLD
-			      | Font.ITALIC, 12);
+			      | Font.ITALIC, 6);
 		
 		PointCanvas()
 		{
@@ -212,40 +215,97 @@ public class ClosestPoint extends JFrame {
 			this.setMaximumSize(dim);
 			this.setMinimumSize(dim);
 			
-			this.setBorder(new LineBorder(Color.BLACK));
+			//this.setBorder(new LineBorder(Color.BLACK));
 		}
 		
 
 		@Override
-        public void paintComponent(Graphics graphics) {
-			super.paintComponent(graphics);
-            Graphics g = graphics.create();
-			g.setColor(Color.black);
-
-		    g.setFont(monoFont);
-		    FontMetrics fm = g.getFontMetrics();
-		    int w = fm.stringWidth("Test");
-		    int h = fm.getAscent();
-		    g.drawString("Test", 120 - (w / 2), 120 + (h / 4));
+        public void paint(Graphics graphics) {
+			if(!hasUpdate)
+				return;
+			//super.update(graphics);
+           /// Graphics g = graphics.create();
+			if(this.getBufferStrategy() == null)
+			{
+				this.createBufferStrategy(3);
+			}
+			BufferStrategy strategy = this.getBufferStrategy();
+			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
+            g.setFont(monoFont);
+            g.setColor(Color.LIGHT_GRAY);
+            g.fillRect(0, 0, getWidth(), getHeight());
+			drawDeltas(g);
+			drawGrid(g);
+			drawPoints(g);
+			drawComparisons(g);
+			drawSolution(g);
 		    g.dispose();
-
+		    
+		    strategy.show();
+		    Toolkit.getDefaultToolkit().sync();
 		}
+		
 		private void drawDeltas(Graphics g)
 		{
 			
 		}
 		private void drawGrid(Graphics g)
 		{
-			
+			g.setColor(Color.black);
+			//Draw X Axis Ticks
+			for(int i=0; i < 750 ; i += 25)
+			{
+				g.drawLine(i, 0, i, 10);
+				g.drawString(Integer.toString(i), i-5, this.getHeight() - 10);
+				g.drawLine(i, this.getHeight(), i, this.getHeight() - 5);
+			}
+			for(int i=0; i < 750 ; i += 25)
+			{
+				g.drawLine(0, i, 5, i);
+				g.drawString(Integer.toString(i), 5, i+2);
+				g.drawLine(this.getWidth(), i, this.getWidth() - 10, i);
+			}
 		}
 		
 		private void drawPoints(Graphics g){
+			g.setColor(Color.black);
+			if(points != null)
+			{
+				for(Point p : points)
+				{
+					g.drawOval(p.getX(), p.getY(), 3, 3);
+				}
+			}
 			
 		}
 		
 		private void drawComparisons(Graphics g)
 		{
-			
+			g.setColor(Color.RED);
+			if(Stats.comparisons != null)
+			{
+				for(Pair<Point, Point> comp : Stats.comparisons)
+				{
+					Point p1 = comp.getLeft();
+					Point p2 = comp.getRight();
+					g.drawOval(p1.getX(), p1.getY(), 3, 3);
+					g.drawOval(p2.getX(), p2.getY(), 3, 3);
+					g.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+				}
+			}
+		}
+		
+		private void drawSolution(Graphics g)
+		{
+			g.setColor(Color.GREEN);
+			if(closestPair != null)
+			{
+				Point p1 = closestPair.getLeft();
+				Point p2 = closestPair.getRight();
+				g.drawOval(p1.getX(), p1.getY(), 3, 3);
+				g.drawOval(p2.getX(), p2.getY(), 3, 3);
+				g.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+			}
 		}
 	}
 }

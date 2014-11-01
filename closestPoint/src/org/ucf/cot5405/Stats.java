@@ -14,8 +14,8 @@ public class Stats{
 	static public void reset()
 	{
 		numComparisons =0;
-		List<Double> cuts = new ArrayList<Double>();
-		List<Pair<Integer, Double>> deltas = new ArrayList<Pair<Integer, Double>>();
-		List<Pair<Point, Point>> comparisons = new ArrayList<Pair<Point, Point>>();
+		cuts = new ArrayList<Double>();
+		deltas = new ArrayList<Pair<Integer, Double>>();
+		comparisons = new ArrayList<Pair<Point, Point>>();
 	}
 }
