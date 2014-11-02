@@ -125,11 +125,11 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 		
 		//TODO: Perform Delta Search!!
 		double minimumDist = delta.getRight();
-		Pair<Point, Point> deltaSmallest;
+		Pair<Point, Point> deltaSmallest = null;
 		for(Point p : remaining)
 		{
 			int index = remaining.indexOf(p);
-			for(int i=index; i < Math.min(index + 11, remaining.size()-1); i++)
+			for(int i=index; i < Math.min(index + 11, remaining.size()); i++)
 			{
 				Point p2 = remaining.get(i);
 				if(p == p2)
@@ -140,8 +140,23 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 				if(dist < minimumDist)
 				{
 					minimumDist = dist;
+					if(deltaSmallest != null)
+					{
+						Stats.shortests.remove(deltaSmallest);
+					}
 					deltaSmallest = new Pair<Point, Point>(p,p2);
 					smallest = deltaSmallest;
+					if(leftSmallest != null)
+					{
+						Stats.shortests.remove(leftSmallest);
+					}
+					
+					if(rightSmallest != null)
+					{
+						Stats.shortests.remove(rightSmallest);
+					}
+					Stats.shortests.add(deltaSmallest);
+					ClosestPoint.getSingleton().updateDisplay();
 				}
 			}
 		}
@@ -154,6 +169,10 @@ public class RecursiveAlgorithm implements ClosestPointAlgo{
 		if(rightSmallest != null)
 		{
 			Stats.shortests.remove(rightSmallest);
+		}
+		if(deltaSmallest != null)
+		{
+			Stats.shortests.remove(deltaSmallest);
 		}
 		Stats.cuts.remove(cut);
 		Stats.deltas.remove(delta);
